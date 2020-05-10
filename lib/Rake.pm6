@@ -1,6 +1,6 @@
 use v6.c;
 
-role Rake:ver<0.0.1>:auth<cpan:ELIZABETH>[*@types] does Positional {
+role Rake:ver<0.0.2>:auth<cpan:ELIZABETH>[*@types] does Positional {
     has @!values handles <elems end gist iterator join Str>;
     has int $!end;
 
@@ -15,13 +15,13 @@ role Rake:ver<0.0.1>:auth<cpan:ELIZABETH>[*@types] does Positional {
 
         X::OutOfRange.new(
           what  => 'number of values',
-          got   => @values.end,
-          range => "$!end..$!end"
+          got   => @values.elems,
+          range => "{$!end + 1}..{$!end + 1}"
         ).throw if @values.end != $!end;
 
         for @values.kv -> $i, \value {
-            X::Typecheck.new(
-              operation => 'raking',
+            X::TypeCheck.new(
+              operation => "binding element #$i",
               expected  => @types[$i],
               got       => value.WHAT
             ).throw unless @types[$i].ACCEPTS(value);

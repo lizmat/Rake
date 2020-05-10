@@ -2,7 +2,7 @@ use v6.c;
 use Test;
 use Rake;
 
-plan 24;
+plan 26;
 
 {
     my $foo = Rake[Int,Str].new: 42,"foo";
@@ -42,4 +42,16 @@ plan 24;
     is @bar.raku, 'Rake[Int,Str].new(42, "foo")', '@bar did it raku ok';
     is @bar.elems, 2, '@bar is elems ok';
     is @bar.end, 1, '@bar is end ok';
+}
+
+{
+    throws-like { Rake[Int,Str].new: 42,666 }, X::TypeCheck,
+      expected => Str,
+      got      => Int,
+      'did we typecheck ok';
+
+    throws-like { Rake[Int,Str].new: 42 }, X::OutOfRange,
+      range => "2..2",
+      got   => 1,
+      'did we check number of values ok';
 }
