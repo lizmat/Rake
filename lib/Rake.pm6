@@ -1,46 +1,94 @@
 use v6.c;
 
-role Rake:ver<0.0.2>:auth<cpan:ELIZABETH>[*@types] does Positional {
+role Rake:ver<0.0.3>:auth<cpan:ELIZABETH>[*@types, :$force-value-type]
+  does Positional
+{
+    has ObjAt $!WHICH;
     has @!values handles <elems end gist iterator join Str>;
-    has int $!end;
 
-    method new(*@values) {
-        @values
-         ?? self.CREATE.STORE(@values, :INITIALIZE)
-         !! self.CREATE
+    my int $elems = @types.elems;  # reifies
+
+    method new(**@values) {
+        if @values.elems -> $got {   # reifies
+            $got == $elems
+              ?? self.CREATE.STORE(@values, :INITIALIZE)
+              !! X::OutOfRange.new(
+                   what  => 'number of values',
+                   got   => $got,
+                   range => "$elems..$elems"
+                 ).throw
+        }
+
+        # in some cases we get called without params before .STORE gets called
+        else {
+            self.CREATE
+        }
     }
 
-    method STORE(*@values, :INITIALIZE($)!) {
-        $!end = @types.end;
-
-        X::OutOfRange.new(
-          what  => 'number of values',
-          got   => @values.elems,
-          range => "{$!end + 1}..{$!end + 1}"
-        ).throw if @values.end != $!end;
-
-        for @values.kv -> $i, \value {
-            X::TypeCheck.new(
-              operation => "binding element #$i",
-              expected  => @types[$i],
-              got       => value.WHAT
-            ).throw unless @types[$i].ACCEPTS(value);
-            @values[$i] := value<>;  # decont
+    method STORE(@values, :INITIALIZE($)!) is hidden-from-backtrace {
+        if $force-value-type {
+            my @which = self.^name;
+            for @values.kv -> $i, \value {
+                if @types[$i].ACCEPTS(value) {
+                    my $WHICH := value.WHICH;
+                    if $WHICH ~~ ValueObjAt {
+                        @which.push($WHICH);
+                        @!values[$i] := value<>;  # decont
+                    }
+                    else {
+                        die "Received non value-type for element #$i when :force-value-type active";
+                    }
+                }
+                else {
+                    X::TypeCheck.new(
+                      operation => "binding element #$i",
+                      expected  => @types[$i],
+                      got       => value.WHAT
+                    ).throw;
+                }
+            }
         }
-        @!values := @values;
+        else {
+            for @values.kv -> $i, \value {
+                @types[$i].ACCEPTS(value)
+                  ?? (@!values[$i] := value<>)  # decont
+                  !! X::TypeCheck.new(
+                       operation => "binding element #$i",
+                       expected  => @types[$i],
+                       got       => value.WHAT
+                     ).throw;
+            }
+        }
 
         self
     }
 
-    method AT-POS(int $pos) {
-        $pos < 0 || $pos > $!end
-          ?? X::OutOfRange.new(
-               what => 'index', got => $pos, range => "0..$!end"
+    method AT-POS(int $pos) is hidden-from-backtrace {
+        0 <= $pos < $elems
+          ?? @!values.AT-POS($pos)
+          !! X::OutOfRange.new(
+               what => 'index', got => $pos, range => "0..{$elems - 1}"
              ).throw
-          !! @!values.AT-POS($pos)
     }
 
-    multi method raku(Rake:D:) {
+    multi method WHICH(::?CLASS:D: --> ObjAt:D) {
+        $!WHICH.defined
+          ?? $!WHICH
+          !! self!WHICH
+    }
+
+    method !WHICH(--> ObjAt:D) {
+        my @which = self.^name;
+        for @!values -> $value {
+            my $WHICH := $value.WHICH;
+            $WHICH ~~ ValueObjAt
+              ?? @which.push($WHICH)
+              !! (return $!WHICH := self.Mu::WHICH)
+        }
+        $!WHICH := ValueObjAt.new(@which.join('|'))
+    }
+
+    multi method raku(Rake:D: --> Str:D) {
         self.^name ~ '.new(' ~ @!values.raku.substr(1,*-1) ~ ')'
     }
 }
@@ -67,7 +115,17 @@ Rake - raking typed values together in a list
 
   my @bar := Rake[Int,Int].new(42,666);
 
-  my @baz is Rake[Int,Int] = 42,666; # if Raku allows
+  constant RIS = Rake[Int,Str];        # Rakudo < v2020.06
+  my @baz is RIS = 42,"foo";
+
+  my @baz is Rake[Int,Str] = 42,"foo"; # Rakudo >= v2020.06
+
+  class CIS does Rake[Int,Str] { }
+  my @caz is CIS = 42,"foo";
+
+  sub take-rake(Rake[Int,Str] $raked) {
+      say "got: $raked";
+  }
 
 =head1 DESCRIPTION
 
@@ -76,7 +134,8 @@ collection of typed objects without the need to use a hash, list or class.
 It only accepts values that smartmatch the given types on creation of the
 collection and provides immutable positional values from the result.
 
-It can be iterated over and be passed around as a single object.
+It can be iterated over and be passed around as a single object.  It can
+also be used as a constraint in dispatch.
 
 =head1 INSPIRATION
 
