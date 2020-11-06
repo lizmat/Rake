@@ -2,7 +2,7 @@ use v6.c;
 use Test;
 use Rake;
 
-plan 11;
+plan 15;
 
 sub test-contents(
   \raked,
@@ -45,7 +45,7 @@ sub test-contents(
 }
 
 {
-    my class RIS does Rake[Int,Str] { }
+    my class RIS does Rake[Int,Str,:value-type] { }
     my @bar is RIS = 42,"foo";
     test-contents(
       @bar,
@@ -69,11 +69,26 @@ else {
 }
 
 {
-    isa-ok Rake[Int,Str].new(42,"foo").WHICH, ValueObjAt,
-      'do we get a value-type if all constituents are value-types';
+    ok Rake[Int,Str,:value-type].new(42,"foo").WHICH.WHAT =:= ValueObjAt,
+      'do we get a value-type if if so requested and all value-types';
 
-    nok Rake[Int,Array].new(42,[666,]).WHICH ~~ ValueObjAt,
+    ok Rake[Int,Str].new(42,"foo").WHICH.WHAT =:= ObjAt,
+      'do we get a non value-type if all constituents are value-types';
+
+    ok Rake[Int,Array].new(42,$[666,]).WHICH.WHAT =:= ObjAt,
       'do we get a non value-type if any of constituents is not a value-type';
+
+    sub answers(*@answers) {
+        Rake[Int xx @answers, :value-type].new(@answers)
+    }
+    is (answers(42,666), answers(42,666)).Set.elems, 1,
+      'did the value-type work ok with set semantics (1)';
+
+    is (answers(42,666), answers(42,999)).Set.elems, 2,
+      'did the value-type work ok with set semantics (2)';
+
+    is (answers(42,666), answers(42,888,999)).Set.elems, 2,
+      'did the value-type work ok with set semantics (3)';
 }
 
 {
@@ -87,9 +102,8 @@ else {
       got   => 1,
       'did we check number of values ok';
 
-    dies-ok {
-        Rake[Int,Array, :force-value-type].new(21, [])
-    }, 'do we die when value-type is enforced, and non value-types given'
+    dies-ok { Rake[Int,Array, :value-type].new(21, $[]) },
+      'do we die when value-type is enforced, and non value-types given'
 }
 
 # vim: ft=perl6 expandtab sw=4

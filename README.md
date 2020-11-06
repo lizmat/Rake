@@ -20,14 +20,31 @@ SYNOPSIS
 
     my @bar := Rake[Int,Int].new(42,666);
 
-    my @baz is Rake[Int,Int] = 42,666; # if Raku allows
+    constant RIS = Rake[Int,Str];        # Rakudo < v2020.06
+    my @baz is RIS = 42,"foo";
+
+    my @baz is Rake[Int,Str] = 42,"foo"; # Rakudo >= v2020.06
+
+    class CIS does Rake[Int,Str] { }
+    my @caz is CIS = 42,"foo";
+
+    sub take-rake(Rake[Int,Str] $raked) {
+        say "got: $raked";
+    }
+
+    sub answers(*@answers) {
+        Rake[Int xx @answers, :value-type].new(@answers)
+    }
+    say (answers(42,666), answers(42,666)).Set.elems;  #1
 
 DESCRIPTION
 ===========
 
 The Rake class (actually, a punned role) allows one to create an ad-hoc collection of typed objects without the need to use a hash, list or class. It only accepts values that smartmatch the given types on creation of the collection and provides immutable positional values from the result.
 
-It can be iterated over and be passed around as a single object.
+It can be iterated over and be passed around as a single object. It can also be used as a constraint in dispatch.
+
+Optionally, it can force objects of the Rake class to act like value types so they can be used with `Set` semantics: this can be achieved by specifying the `:value-type` named parameter with a `True` value.
 
 INSPIRATION
 ===========

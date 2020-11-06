@@ -1,32 +1,30 @@
 use v6.c;
 
-role Rake:ver<0.0.3>:auth<cpan:ELIZABETH>[*@types, :$force-value-type]
+role Rake:ver<0.0.3>:auth<cpan:ELIZABETH>[*@types, :$value-type]
   does Positional
 {
-    has ObjAt $!WHICH;
+    has ObjAt $.WHICH;
     has @!values handles <elems end gist iterator join Str>;
 
     my int $elems = @types.elems;  # reifies
 
-    method new(**@values) {
-        if @values.elems -> $got {   # reifies
-            $got == $elems
-              ?? self.CREATE.STORE(@values, :INITIALIZE)
-              !! X::OutOfRange.new(
-                   what  => 'number of values',
-                   got   => $got,
-                   range => "$elems..$elems"
-                 ).throw
+    proto method new(|) {*}
+    multi method new()         { self.CREATE                             }
+    multi method new(*@values) { self.CREATE.STORE(@values, :INITIALIZE) }
+
+    method STORE(*@values, :INITIALIZE($)!) is hidden-from-backtrace {
+
+        # uh oh
+        if @values.elems != $elems  { # reifies
+            X::OutOfRange.new(
+              what  => 'number of values',
+              got   => @values.elems,
+              range => "$elems..$elems"
+            ).throw;
         }
 
-        # in some cases we get called without params before .STORE gets called
-        else {
-            self.CREATE
-        }
-    }
-
-    method STORE(@values, :INITIALIZE($)!) is hidden-from-backtrace {
-        if $force-value-type {
+        # wants a value type for set semantics
+        elsif $value-type {
             my @which = self.^name;
             for @values.kv -> $i, \value {
                 if @types[$i].ACCEPTS(value) {
@@ -47,7 +45,10 @@ role Rake:ver<0.0.3>:auth<cpan:ELIZABETH>[*@types, :$force-value-type]
                     ).throw;
                 }
             }
+            $!WHICH := ValueObjAt.new(@which.join('|'))
         }
+
+        # not a value type
         else {
             for @values.kv -> $i, \value {
                 @types[$i].ACCEPTS(value)
@@ -58,6 +59,7 @@ role Rake:ver<0.0.3>:auth<cpan:ELIZABETH>[*@types, :$force-value-type]
                        got       => value.WHAT
                      ).throw;
             }
+            $!WHICH := self.Mu::WHICH;
         }
 
         self
@@ -69,23 +71,6 @@ role Rake:ver<0.0.3>:auth<cpan:ELIZABETH>[*@types, :$force-value-type]
           !! X::OutOfRange.new(
                what => 'index', got => $pos, range => "0..{$elems - 1}"
              ).throw
-    }
-
-    multi method WHICH(::?CLASS:D: --> ObjAt:D) {
-        $!WHICH.defined
-          ?? $!WHICH
-          !! self!WHICH
-    }
-
-    method !WHICH(--> ObjAt:D) {
-        my @which = self.^name;
-        for @!values -> $value {
-            my $WHICH := $value.WHICH;
-            $WHICH ~~ ValueObjAt
-              ?? @which.push($WHICH)
-              !! (return $!WHICH := self.Mu::WHICH)
-        }
-        $!WHICH := ValueObjAt.new(@which.join('|'))
     }
 
     multi method raku(Rake:D: --> Str:D) {
@@ -127,6 +112,11 @@ Rake - raking typed values together in a list
       say "got: $raked";
   }
 
+  sub answers(*@answers) {
+      Rake[Int xx @answers, :value-type].new(@answers)
+  }
+  say (answers(42,666), answers(42,666)).Set.elems;  #1
+
 =head1 DESCRIPTION
 
 The Rake class (actually, a punned role) allows one to create an ad-hoc
@@ -136,6 +126,10 @@ collection and provides immutable positional values from the result.
 
 It can be iterated over and be passed around as a single object.  It can
 also be used as a constraint in dispatch.
+
+Optionally, it can force objects of the Rake class to act like value types
+so they can be used with C<Set> semantics: this can be achieved by specifying
+the C<:value-type> named parameter with a C<True> value.
 
 =head1 INSPIRATION
 

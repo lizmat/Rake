@@ -2,6 +2,13 @@ Revision history for Rake
 
 {{$NEXT}}
 
+0.0.3  2020-11-06T19:00:59+01:00
+    - Add support for the :value-type parameter / value types
+    - Adapted / expanded tests
+    - Add many more examples
+    - Made several methods hidden-from-backtrace for better error reporting
+    - Added some more return value signatures
+
 0.0.2  2020-05-10T13:07:58+02:00
     - Fix problem with type checking if type checking failed
     - Added tests for incorrect initialization
