@@ -24,7 +24,5 @@ jobs:
       - uses: Raku/setup-raku@v1
         with:
           raku-version: ${{ matrix.raku-version }}
-      - name: Show Version
-        run: raku --version
       - name: Run Tests
-        run: raku -Ilib t/01-basic.t
+        run: raku run-tests
