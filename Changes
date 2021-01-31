@@ -2,6 +2,10 @@ Revision history for Rake
 
 {{$NEXT}}
 
+0.0.4  2021-01-31T12:09:26+01:00
+    - Added WHEN NOT TO USE THIS FUNCTIONALITY section in documentation
+    - Updated copyright year
+
 0.0.3  2020-11-06T19:00:59+01:00
     - Add support for the :value-type parameter / value types
     - Adapted / expanded tests
