@@ -1,5 +1,5 @@
 {
-  "auth": "cpan:ELIZABETH",
+  "auth": "zef:lizmat",
   "authors": [
     "Elizabeth Mattijsen"
   ],
@@ -12,7 +12,7 @@
   "name": "Rake",
   "perl": "6.c",
   "provides": {
-    "Rake": "lib/Rake.pm6"
+    "Rake": "lib/Rake.rakumod"
   },
   "resources": [
   ],
@@ -22,5 +22,5 @@
   ],
   "test-depends": [
   ],
-  "version": "0.0.4"
+  "version": "0.0.5"
 }

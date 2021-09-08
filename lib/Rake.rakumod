@@ -1,6 +1,6 @@
 use v6.d;
 
-role Rake:ver<0.0.4>:auth<cpan:ELIZABETH>[*@types, :$value-type]
+role Rake:ver<0.0.5>:auth<zef:lizmat>[*@types, :$value-type]
   does Positional
 {
     has ObjAt $.WHICH;
@@ -168,14 +168,14 @@ Inspired by the remarks of C<bobthecimmerian> at:
 
 =head1 AUTHOR
 
-Elizabeth Mattijsen <liz@wenzperl.nl>
+Elizabeth Mattijsen <liz@raku.rocks>
 
 Source can be located at: https://github.com/lizmat/Rake . Comments and
 Pull Requests are welcome.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2020,2021 Elizabeth Mattijsen
+Copyright 2020, 2021 Elizabeth Mattijsen
 
 This library is free software; you can redistribute it and/or modify it under
 the Artistic License 2.0.
