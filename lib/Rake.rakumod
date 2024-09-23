@@ -1,6 +1,6 @@
 use v6.d;
 
-role Rake:ver<0.0.5>:auth<zef:lizmat>[*@types, :$value-type]
+role Rake:ver<0.0.6>:auth<zef:lizmat>[*@types, :$value-type]
   does Positional
 {
     has ObjAt $.WHICH;

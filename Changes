@@ -1,7 +1,10 @@
 Revision history for Rake
 
 {{$NEXT}}
+
+0.0.6  2024-09-23T15:48:06+02:00
     - Add sponsor button and link
+    - Add CI badge for each OS
     - Modernize pod and test file extension
     - Update copyright year
 
