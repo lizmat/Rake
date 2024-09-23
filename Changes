@@ -1,6 +1,9 @@
 Revision history for Rake
 
 {{$NEXT}}
+    - Add sponsor button and link
+    - Modernize pod and test file extension
+    - Update copyright year
 
 0.0.5  2021-09-08T13:37:48+02:00
     - Change file extension to .rakumod
