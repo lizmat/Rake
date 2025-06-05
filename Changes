@@ -1,6 +1,9 @@
 Revision history for Rake
 
 {{$NEXT}}
+    - More thorough testing
+    - Removed inspiration link as it has gone stale
+    - Update copyright year
 
 0.0.6  2024-09-23T15:48:06+02:00
     - Add sponsor button and link

@@ -47,7 +47,7 @@ The `Rake` class (actually, a punned role) allows one to create an ad-hoc collec
 
 It can be iterated over and be passed around as a single object. It can also be used as a constraint in dispatch.
 
-Optionally, it can force objects of the Rake class to act like value types so they can be used with `Set` semantics: this can be achieved by specifying the `:value-type` named parameter with a `True` value.
+Optionally, it can force objects of the Rake class to act like value types so they can be used with `Set` semantics: this can be achieved by specifying the `:value-type` named argument with a `True` value.
 
 WHEN NOT TO USE THIS FUNCTIONALITY
 ==================================
@@ -80,13 +80,6 @@ say $foo.path;  # "filename".IO
 
 You will thank yourself in the future!
 
-INSPIRATION
-===========
-
-Inspired by the remarks of `bobthecimmerian` at:
-
-    https://www.reddit.com/r/rakulang/comments/gfvb8w/raku_objects_confusing_or_what/fq16wjv/
-
 AUTHOR
 ======
 
@@ -99,7 +92,7 @@ If you like this module, or what I'm doing more generally, committing to a [smal
 COPYRIGHT AND LICENSE
 =====================
 
-Copyright 2020, 2021, 2024 Elizabeth Mattijsen
+Copyright 2020, 2021, 2024, 2025 Elizabeth Mattijsen
 
 This library is free software; you can redistribute it and/or modify it under the Artistic License 2.0.
 

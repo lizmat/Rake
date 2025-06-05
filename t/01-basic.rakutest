@@ -2,7 +2,7 @@ use v6.*;
 use Test;
 use Rake;
 
-plan 15;
+plan 18;
 
 sub test-contents(
   \raked,
@@ -92,15 +92,34 @@ else {
 }
 
 {
+    ok Rake[Int,List].new(42,$(1,2,3)).WHICH.Str.starts-with("Rake[Int,List]|"),
+      'check non-value types';
+}
+
+{
     throws-like { Rake[Int,Str].new: 42,666 }, X::TypeCheck,
-      expected => Str,
-      got      => Int,
+      operation => "binding element #1",
+      expected  => Str,
+      got       => Int,
+      'did we typecheck ok';
+
+    throws-like { Rake[Int,Str, :value-type].new: 42,666 }, X::TypeCheck,
+      operation => "binding value-type element #1",
+      expected  => Str,
+      got       => Int,
       'did we typecheck ok';
 
     throws-like { Rake[Int,Str].new: 42 }, X::OutOfRange,
+      what  => "number of values",
       range => "2..2",
       got   => 1,
       'did we check number of values ok';
+
+    throws-like { (Rake[Int,Str].new: 42,"foo")[2] }, X::OutOfRange,
+      what  => "index",
+      range => "0..1",
+      got   => 2,
+      'did we check index ok';
 
     dies-ok { Rake[Int,Array, :value-type].new(21, $[]) },
       'do we die when value-type is enforced, and non value-types given'
